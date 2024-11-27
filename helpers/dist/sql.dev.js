@@ -1,5 +1,7 @@
-const { BadRequestError } = require("../expressError");
+"use strict";
 
+var _require = require("../expressError"),
+    BadRequestError = _require.BadRequestError;
 /**
  * Generates a SQL query snippet for updating specific fields in a database
  *
@@ -29,19 +31,20 @@ const { BadRequestError } = require("../expressError");
  * //}
  */
 
+
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
-  const keys = Object.keys(dataToUpdate);
-  if (keys.length === 0) throw new BadRequestError("No data");
+  var keys = Object.keys(dataToUpdate);
+  if (keys.length === 0) throw new BadRequestError("No data"); // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
 
-  // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
-  const cols = keys.map((colName, idx) =>
-      `"${jsToSql[colName] || colName}"=$${idx + 1}`,
-  );
-
+  var cols = keys.map(function (colName, idx) {
+    return "\"".concat(jsToSql[colName] || colName, "\"=$").concat(idx + 1);
+  });
   return {
     setCols: cols.join(", "),
-    values: Object.values(dataToUpdate),
+    values: Object.values(dataToUpdate)
   };
 }
 
-module.exports = { sqlForPartialUpdate };
+module.exports = {
+  sqlForPartialUpdate: sqlForPartialUpdate
+};
