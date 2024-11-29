@@ -59,9 +59,23 @@ function ensureAdmin(req,res, next){
   }
 }
 
+/** Middleware to require admin or the correct user */
+function ensureCorrectUserOrAdmin(req,res,next){
+  try {
+    const user = res.locals.user
+    if (!(user && (user.isAdmin || user || user.username === req.params.username))){
+      throw new UnauthorizedError("Access Denied")
+    }
+    return next()
+  }catch (err){
+    return next(err)
+  }
+}
+
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
   ensureAdmin,
+  ensureCorrectUserOrAdmin,
 };

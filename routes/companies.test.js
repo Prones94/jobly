@@ -11,6 +11,7 @@ const {
   commonAfterEach,
   commonAfterAll,
   u1Token,
+  adminToken
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -29,6 +30,17 @@ describe("POST /companies", function () {
     numEmployees: 10,
   };
 
+  test("works for admins", async function() {
+    const resp = await request(app)
+      .post("/companies")
+      .send(newCompany)
+      .set("authorization", `Bearer ${adminToken}`)
+    expect(resp.statusCode).toEqual(201)
+    expect(resp.body).toEqual({
+      company: newCompany,
+    })
+  })
+
   test("ok for users", async function () {
     const resp = await request(app)
         .post("/companies")
@@ -39,6 +51,21 @@ describe("POST /companies", function () {
       company: newCompany,
     });
   });
+
+  test("unauth for non-admin users", async function() {
+    const resp = await request(app)
+      .post("/companies")
+      .send(newCompany)
+      .set("authorization", `Bearer ${u1Token}`)
+    expect(resp.statusCode).toEqual(403)
+  })
+
+  test("unauth for anon", async function(){
+    const resp = await request(app)
+      .post("/companies")
+      .send(newCompany)
+    expect(resp.statusCode).toEqual(401)
+  })
 
   test("bad request with missing data", async function () {
     const resp = await request(app)

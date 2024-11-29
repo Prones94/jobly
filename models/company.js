@@ -75,9 +75,15 @@ class Company {
                   name,
                   description,
                   num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
-           WHERE handle = $1`,
+                  logo_url AS "logoUrl",
+                  json_agg(json_build_object('id', j.id,
+                                             'title', j.title,
+                                             'salary', j.salary,
+                                             'equity', j.equity)) AS jobs
+           FROM companies c
+           LEFT JOIN jobs j on c.handle = j.company_handle
+           WHERE handle = $1
+           GROUP BY c.handle`,
         [handle]);
 
     const company = companyRes.rows[0];
