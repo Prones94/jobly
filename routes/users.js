@@ -103,6 +103,18 @@ router.patch("/:username", ensureLoggedIn, ensureCorrectUserOrAdmin, async funct
   }
 });
 
+/** POST /users/:username/jobs/:id => { applied: jobId }
+ * Authorization required: admin or same user as :username
+*/
+router.post("/:username/jobs/:id", ensureLoggedin, ensureCorrectUserOrAdmin, async function(req, res, next) {
+  try {
+    const { username, id } = req.params
+    await User.applyForJob(username, id)
+    return res.json({ applied: +id })
+  } catch (err) {
+    return next(err)
+  }
+})
 
 /** DELETE /[username]  =>  { deleted: username }
  *

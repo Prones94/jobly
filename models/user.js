@@ -139,6 +139,15 @@ class User {
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
 
+    const jobRes = await db.query(
+      `SELECT job_id
+       FROM applications
+       WHERE username = $1`,
+       [username]
+    )
+
+    user.jobs = jobRes.rows.map(row => row.job_id)
+
     return user;
   }
 
@@ -173,9 +182,9 @@ class User {
         });
     const usernameVarIdx = "$" + (values.length + 1);
 
-    const querySql = `UPDATE users 
-                      SET ${setCols} 
-                      WHERE username = ${usernameVarIdx} 
+    const querySql = `UPDATE users
+                      SET ${setCols}
+                      WHERE username = ${usernameVarIdx}
                       RETURNING username,
                                 first_name AS "firstName",
                                 last_name AS "lastName",
@@ -188,6 +197,29 @@ class User {
 
     delete user.password;
     return user;
+  }
+
+  /** Apply for a job: updates database, returns undefined
+   * Throws NotFoundError if jobId or username not found
+   */
+  static async applyForJob(username, jobId){
+    const jobCheck = await db.query(
+      `SELECT id
+       FROM jobs
+       WHERE id = $1`,
+       [jobId]
+    )
+
+    if (!jobCheck.rows[0]){
+      throw new NotFoundError(`No job with ID: ${jobId}`)
+    }
+
+    await db.query(
+      `INSERT INTO applications (username, job_id)
+       VALUES ($1, $2)
+       ON CONFLICT DO NOTHING`,
+       [username, jobId]
+    )
   }
 
   /** Delete given user from database; returns undefined. */

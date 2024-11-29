@@ -140,8 +140,33 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
+      jobs:[],
     });
   });
+
+  test("works: user with applications", async function(){
+    await User.applyForJob("u1", testJobIds[0])
+    await User.applyForJob("u1", testJobIds[1])
+
+    const user = await User.get("u1")
+    expect(user).toEqual({
+      username: "u1",
+      firstName: "U1F",
+      lastName: "U1L",
+      email: "user1@test.com",
+      isAdmin: false,
+      jobs: [testJobIds[0], testJobIds[1]],
+    })
+  })
+
+  test("throws NotFoundError if user not found", async function() {
+    try {
+      await User.get("nope")
+      fail()
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy()
+    }
+  })
 
   test("not found if no such user", async function () {
     try {
@@ -228,3 +253,36 @@ describe("remove", function () {
     }
   });
 });
+
+/*************************************** applyForJob */
+describe("applyForJob", function() {
+  test("works", async function() {
+    await User.applyForJob("u1", testJobIds[0])
+
+    const res = await db.query(
+      `SELECT username, job_id
+       FROM applications
+       WHERE username = 'u1' AND job_id = $1`,
+       [testJobIds[0]]
+    )
+    expect(res.rows).toEqual([{ username: "u1", job_id: testJobIds[0] }])
+  })
+
+  test("throws NotFoundError if job not found", async function(){
+    try {
+      await User.applyForJob("u1", 0)
+      fail()
+    } catch(err){
+      expect(err instanceof NotFoundError).toBeTruthy()
+    }
+  })
+
+  test("throws NotFoundError if user not found", async function(){
+    try {
+      await User.applyForJob("nope", testJobIds[0])
+      fail()
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy()
+    }
+  })
+})
