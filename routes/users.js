@@ -13,6 +13,7 @@ const userNewSchema = require("../schemas/userNew.json");
 const userUpdateSchema = require("../schemas/userUpdate.json");
 
 const router = express.Router();
+const generatePassword = require("generate-password")
 
 
 /** POST / { user }  => { user, token }
@@ -34,6 +35,15 @@ router.post("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
+
+    const password = generatePassword.generate({
+      length: 12,
+      numbers: true,
+      uppercase: true,
+      lowercase: true,
+      symbols: true,
+      excludeSimilarCharacters: true
+    })
 
     const user = await User.register(req.body);
     const token = createToken(user);

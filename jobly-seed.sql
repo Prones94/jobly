@@ -368,3 +368,11 @@ VALUES ('Conservator, furniture', 110000, 0, 'watson-davis'),
        ('Learning disability nurse', 66000, NULL, 'ayala-buchanan'),
        ('Research scientist (medical)', 175000, NULL, 'norman-harvey'),
        ('Accommodation manager', 126000, NULL, 'mejia-scott-ryan');
+
+-- Seed data for the applications table
+INSERT INTO applications (username, job_id, state)
+VALUES
+    ('u1', 1, 'applied'),
+    ('u2', 2, 'interested'),
+    ('u3', 3, 'accepted'),
+    ('u4', 4, 'rejected')
